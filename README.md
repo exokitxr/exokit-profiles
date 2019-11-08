@@ -1,1 +1,1 @@
-# exokit-world-explorer
+# exokit-profile-pages
