@@ -34,6 +34,28 @@
             const client_id = '234bb63558d8675770d4'
             let userToken = null;
 
+            window.addEventListener('load', async (event) => {
+                email = localStorage.getItem('email');
+                userToken = localStorage.getItem('token')
+                if(email && userToken){
+                    const query = `https://login.exokit.org/?email=${encodeURIComponent(email)}&token=${userToken}`;
+                    let response = await fetch(query, {
+                        method: 'POST',
+                        mode: 'cors'
+                    })
+                    if(response.ok){
+                        response = await response.json();
+                        verificationStep = 2;
+                        changeStep()
+                    }
+                    else{
+                        verificationStep = 0;
+                        changeStep()
+                    }
+
+                }
+            });
+
             const submitForm = async () =>{
                 let query = '';
                 switch(verificationStep){
@@ -66,6 +88,7 @@
                     else{
                         userToken = response.token;
                         localStorage.setItem('token', userToken)
+                        localStorage.setItem('email', email)
                         verificationStep++;
                     }
                     changeStep()
