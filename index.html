@@ -28,17 +28,14 @@
         </nav>     
 
         <script>
-            let email = '';
-            let verficationCode = '';
+            let email = null;
+            let verficationCode = null;
             let verificationStep = 0;
             const client_id = '234bb63558d8675770d4'
-            let userToken = '';
+            let userToken = null;
 
             const submitForm = async () =>{
                 let query = '';
-                let method = '';
-                let mode = '';
-                let response = '';
                 switch(verificationStep){
                     case 0:
                         userToken = localStorage.getItem('token');
@@ -48,37 +45,30 @@
                         else{
                             query = 'https://login.exokit.org/?email=' + encodeURIComponent(email);
                         }
-                        method = "POST";
-                        mode = 'cors'
-                        response = await fetch(query, {
-                            method: method,
-                            mode: mode
-                        })
-                        if(response.ok){
-                            userToken ? verificationStep = verificationStep + 2 : verificationStep++;
-                            changeStep()
-                        }
                         break;
                     case 1:
                         query = 'https://login.exokit.org/?email=' + encodeURIComponent(email) + "&code=" + encodeURIComponent(verficationCode);
-                        method = "POST";
-                        mode = 'cors'
-                        response = await fetch(query, {
-                            method: method,
-                            mode: mode
-                        })
-                        if(response.ok){
-                            response = await response.json();
-                            userToken = response.token;
-                            localStorage.setItem('token', userToken)
-                            verificationStep = ++verificationStep;
-                            changeStep()
-                        }
                         break;
                     case 2:
                         window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&state=${email}:${userToken}`
                     default:
                         break;
+                }
+                let response = await fetch(query, {
+                    method: 'POST',
+                    mode: 'cors'
+                })
+                if(response.ok){
+                    response = await response.json();
+                    if(verificationStep === 0){
+                        userToken ? verificationStep = verificationStep + 2 : verificationStep++;
+                    }
+                    else{
+                        userToken = response.token;
+                        localStorage.setItem('token', userToken)
+                        verificationStep++;
+                    }
+                    changeStep()
                 }
             }
 
