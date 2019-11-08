@@ -1,0 +1,140 @@
+<html>
+    <head>
+        <title>Exokit World Explorer</title>
+        <link rel="stylesheet" type="text/css" href="index.css">
+        <link rel="icon" href="icon.png" type="image/png">
+    </head>
+    <body>
+        <nav id="nav">
+            <img id="navIcon" src="icon.png">
+            <div id="navBrand">World Explorer</div>
+            <div style="flex-grow: 100"></div>
+            <form id="loginForm">
+                <div id="loginStep0">
+                    <input id="loginEmail" class="loginInput" type="email" placeholder="your@email.com" value="">
+                    <button id="loginSubmit">Log In</button>
+                </div>
+                <div id="loginStep1">
+                    <input id="loginVerifcation" class="loginInput" type="text" placeholder="Verification Code" value="">
+                    <button id="loginSubmit">Verify</button>
+                </div>
+                <div id="loginStep2">
+                    <button id="loginSubmit">Login with Github</button>
+                </div>
+                <div id="loginStep3">
+                    <div id="userEmail"></div>
+                </div>
+            </form>
+        </nav>     
+
+        <script>
+            let email = '';
+            let verficationCode = '';
+            let verificationStep = 0;
+            const client_id = '234bb63558d8675770d4'
+            let userToken = '';
+
+            const submitForm = async () =>{
+                let query = '';
+                let method = '';
+                let mode = '';
+                let response = '';
+                switch(verificationStep){
+                    case 0:
+                        userToken = localStorage.getItem('token');
+                        if(userToken){
+                            query = `https://login.exokit.org/?email=${encodeURIComponent(email)}&token=${userToken}`;
+                        }
+                        else{
+                            query = 'https://login.exokit.org/?email=' + encodeURIComponent(email);
+                        }
+                        method = "POST";
+                        mode = 'cors'
+                        response = await fetch(query, {
+                            method: method,
+                            mode: mode
+                        })
+                        if(response.ok){
+                            userToken ? verificationStep = verificationStep + 2 : verificationStep++;
+                            changeStep()
+                        }
+                        break;
+                    case 1:
+                        query = 'https://login.exokit.org/?email=' + encodeURIComponent(email) + "&code=" + encodeURIComponent(verficationCode);
+                        method = "POST";
+                        mode = 'cors'
+                        response = await fetch(query, {
+                            method: method,
+                            mode: mode
+                        })
+                        if(response.ok){
+                            response = await response.json();
+                            userToken = response.token;
+                            localStorage.setItem('token', userToken)
+                            verificationStep = ++verificationStep;
+                            changeStep()
+                        }
+                        break;
+                    case 2:
+                        window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&state=${email}:${userToken}`
+                    default:
+                        break;
+                }
+            }
+
+            const changeStep = () => {
+                const step0 = document.getElementById('loginStep0');
+                const step1 = document.getElementById('loginStep1');
+                const step2 = document.getElementById('loginStep2');
+                const step3 = document.getElementById('loginStep3');
+                const userEmail = document.getElementById('userEmail');
+
+                switch(verificationStep){
+                    case 0:
+                        step0.style.display = 'block';
+                        step1.style.display = 'none';
+                        step2.style.display = 'none';
+                        step3.style.display = 'none';
+                        break;
+                    case 1:
+                        step0.style.display = 'none';
+                        step1.style.display = 'block';
+                        step2.style.display = 'none';
+                        step3.style.display = 'none';
+                        break;
+                    case 2:
+                        step0.style.display = 'none';
+                        step1.style.display = 'none';
+                        step2.style.display = 'block';
+                        step3.style.display = 'none';
+                        break;
+                    case 3:
+                        step0.style.display = 'none';
+                        step1.style.display = 'none';
+                        step2.style.display = 'none';
+                        step3.style.display = 'block';
+                        userEmail.innerText = email;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            document.getElementById('loginForm').addEventListener('submit', e => {
+                e.preventDefault();
+                submitForm()
+            });
+
+            document.getElementById('loginEmail').addEventListener('input', e => {
+                email = e.target.value;
+            });
+
+            document.getElementById('loginVerifcation').addEventListener('input', e => {
+                verficationCode = e.target.value;
+            });
+
+            changeStep()
+
+        </script>
+    </body>
+</html>
