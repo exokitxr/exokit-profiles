@@ -1,1 +1,1 @@
-# exokit-profile-pages
+# Exokit user pages
