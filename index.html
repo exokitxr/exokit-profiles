@@ -24,21 +24,17 @@
                     <div id="loginStep2">
                         <button id="loginSubmit">Login with Github</button>
                     </div>
-                    <div id="loginStep3">
-                        <div id="userEmail" onclick="logout()"></div>
+                    <div id="loginStep3" style="margin-top: 5px;">
+                        <span id="userEmail"></span><span id="logoutButton" onclick="logout()">Logout</span>
                     </div>
                 </form>
             </nav>     
-            <div id="githubRepos">
-                <h3 style="padding: 20px">Exokit Worlds from Github</h3>
+            <div id="repos">
+                <h3 style="padding: 20px" id="repoHeader">Exokit Worlds from Github</h3>
                 <button class="repoButton" id="createRepo" onclick="toggleCreateModal(true)">Create Exokit World</button>
                 <div id="repoContainer">
     
                 </div>
-            </div>
-
-            <div id="editRepoContainer">
-                
             </div>
            
         </div>
@@ -59,11 +55,13 @@
             let userData = {};
             let createRepoName = '';
             let repos = [];
+            let visiblity = 'public';
+            let userHash = ''
 
             window.addEventListener('load', async (event) => {
                 userData.email = localStorage.getItem('email');
                 userData.token = localStorage.getItem('token')
-                const userHash = window.location.hash.slice(1);
+                userHash = window.location.hash.slice(1);
                 if(userData.email && userData.token && !userHash){
                     const response = await fetch(`https://login.exokit.org/?email=${encodeURIComponent(userData.email)}&token=${userData.token}`, {
                         method: 'POST',
@@ -75,6 +73,7 @@
                         userData.githubOauthState ? verificationStep = 3 : verificationStep = 2;
                         changeStep()
                         if (userData.githubOauthState) {
+                            document.getElementById('repoHeader').innerText = `Your Exokit Worlds from Github`
                             loadRepos()
                         }
                     }   
@@ -86,31 +85,33 @@
                     }
                 }
                 else if(userHash){
+                    if(userData.email && userData.token){ // user has login from previous session, login and show public user repo
+                        const response = await fetch(`https://login.exokit.org/?email=${encodeURIComponent(userData.email)}&token=${userData.token}`, {
+                            method: 'POST',
+                            mode: 'cors'
+                        })
+                        if(response.ok){
+                            const json = await response.json()
+                            userData = json;
+                            verificationStep = 3;
+                        }   
+                        else{ // login failed
+                            localStorage.clear('email')
+                            localStorage.clear('token')
+                        }
+                    }
+                    else{ 
+                        document.getElementById('createRepo').style.display = 'none'
+                    }
+                    document.getElementById('repoHeader').innerText = `Exokit Worlds from ${userHash}`
                     loadRepos(userHash)
-                    userData.email = userHash;
-                    verificationStep = 3;
                     changeStep();
                 }
+                else if(!userHash){
+                    document.getElementById('repoHeader').style.display = 'none'
+                    document.getElementById('createRepo').style.display = 'none'
+                }
             });
-
-            const editRepo = repoIndex => {
-                const repo = repos[repoIndex]
-                const reposContainer = document.getElementById('editRepoContainer');
-                const repoContainer = document.getElementById('repoContainer');
-                editRepoContainer.style.display = 'block'
-                repoContainer.style.display = 'none'
-
-                const editHTML = `
-                    <img class="repoIcon" src="${repo.previewUrl}" />
-                    <h4 class="repoName">${repo.name}</h4>
-                    <div class="repoButtons">
-                        <button onclick="uploadFile()" style="float: right" class="repoButton">Upload</button>
-                    </div>
-                `;
-
-                editRepoContainer.insertAdjacentHTML('beforeend', editHTML)
-
-            }
 
             const loadRepos = (userHash) => {
                 let query = ``;
@@ -141,7 +142,6 @@
                                                 <a href="${repo.cloneUrl}" target="_blank"><button class="repoButton cloneRepo">Clone Repo</button></a>
                                                 <a href="${repo.repoUrl}" target="_blank"><button class="repoButton visitRepo">Visit Repo</button></a>
                                                 <a href="${repo.webxrUrl}" target="_blank"><button class="repoButton webxrRepo">Launch World</button></a>
-                                                <button onclick="editRepo(${repoIndex})" style="float: right" class="repoButton">Edit</button>
                                             </div>
                                         </div>
                                     </div>
@@ -188,6 +188,11 @@
                         localStorage.setItem('token', userData.token)
                         localStorage.setItem('email', userData.email)
                         if( userData.token && userData.email && userData.githubOauthState){
+                            document.getElementById('repoHeader').style.display = 'block'
+                            document.getElementById('createRepo').style.display = 'block'
+                            if(!userHash){
+                                document.getElementById('repoHeader').innerText = `Your Exokit Worlds from Github`
+                            }
                             verificationStep = 3;
                             loadRepos()
                         }
@@ -204,7 +209,7 @@
                 const step1 = document.getElementById('loginStep1');
                 const step2 = document.getElementById('loginStep2');
                 const step3 = document.getElementById('loginStep3');
-                const githubRepos = document.getElementById('githubRepos');
+                const repos = document.getElementById('repos');
                 const userEmail = document.getElementById('userEmail');
 
                 switch(verificationStep){
@@ -213,21 +218,21 @@
                         step1.style.display = 'none';
                         step2.style.display = 'none';
                         step3.style.display = 'none';
-                        githubRepos.display = "none"
+                        repos.display = "none"
                         break;
                     case 1:
                         step0.style.display = 'none';
                         step1.style.display = 'block';
                         step2.style.display = 'none';
                         step3.style.display = 'none';
-                        githubRepos.display = "none"
+                        repos.display = "none"
                         break;
                     case 2:
                         step0.style.display = 'none';
                         step1.style.display = 'none';
                         step2.style.display = 'block';
                         step3.style.display = 'none';
-                        githubRepos.display = "none"
+                        repos.display = "none"
                         break;
                     case 3:
                         step0.style.display = 'none';
@@ -235,7 +240,7 @@
                         step2.style.display = 'none';
                         step3.style.display = 'block';
                         userEmail.innerText = userData.email;
-                        githubRepos.style.display = "block"
+                        repos.style.display = "block"
                         break;
                     default:
                         break;
