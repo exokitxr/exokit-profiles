@@ -81,7 +81,7 @@
                         query = 'https://login.exokit.org/?email=' + encodeURIComponent(email) + "&code=" + encodeURIComponent(verficationCode);
                         break;
                     case 2:
-                        window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&scope=repo&state=${encodeURIComponent(email)}:${encodeURIComponent(userToken)}:${encodeURIComponent(location.href)}`
+                        window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&scope=${encodeURIComponent(['repo','delete_repo'].join(','))}&state=${encodeURIComponent(email)}:${encodeURIComponent(userToken)}:${encodeURIComponent(location.href)}`
                     default:
                         break;
                 }
