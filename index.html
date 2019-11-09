@@ -200,7 +200,7 @@
             }
 
             const createRepo = async () => {
-                const query = `https://repos.exokit.org/repos/${userData.name}/${createRepoName}?email=${userData.email}&token=${userData.token}`
+                const query = `https://repos.exokit.org/repos/${encodeURIComponent(userData.name)}/${encodeURIComponent(createRepoName)}?email=${encodeURIComponent(userData.email)}&token=${encodeURIComponent(userData.token)}`
                 let response = await fetch(query, {
                     method: 'PUT',
                     mode: 'cors'
