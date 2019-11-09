@@ -29,7 +29,7 @@
                     </div>
                 </form>
             </nav>     
-            <div id="githubRepos" style="display: none">
+            <div id="githubRepos">
                 <h3 style="padding: 20px">Exokit Worlds from Github</h3>
                 <button class="repoButton" id="createRepo" onclick="toggleCreateModal(true)">Create Exokit World</button>
                 <div id="repoContainer">
@@ -58,8 +58,8 @@
             window.addEventListener('load', async (event) => {
                 userData.email = localStorage.getItem('email');
                 userData.token = localStorage.getItem('token')
-                if(email && userToken){
-                    fetch(`https://login.exokit.org/?email=${encodeURIComponent(email)}&token=${userToken}`, {
+                if(userData.email && userData.token){
+                    fetch(`https://login.exokit.org/?email=${encodeURIComponent(userData.email)}&token=${userData.token}`, {
                         method: 'POST',
                         mode: 'cors'
                     })
@@ -117,7 +117,7 @@
                 switch(verificationStep){
                     case 0:
                         userData.token = localStorage.getItem('token');
-                        if(userToken){
+                        if(userData.token){
                             query = `https://login.exokit.org/?email=${encodeURIComponent(userData.email)}&token=${userData.token}`;
                         }
                         else{
@@ -139,13 +139,19 @@
                 if(response.ok){
                     response = await response.json();
                     if(verificationStep === 0){
-                        userData.token ? verificationStep = verificationStep + 2 : verificationStep++;
+                        userData.token ? verificationStep = 2 : verificationStep++;
                     }
-                    else{
+                    else if(verificationStep === 1){
                         userData = response;
                         localStorage.setItem('token', userData.token)
                         localStorage.setItem('email', userData.email)
-                        verificationStep++;
+                        if( userData.token && userData.email && userData.githubOauthState){
+                            verificationStep = 3;
+                            loadRepos()
+                        }
+                        else{
+                            verificationStep = 2;
+                        }
                     }
                     changeStep()
                 }
@@ -158,6 +164,8 @@
                 const step3 = document.getElementById('loginStep3');
                 const githubRepos = document.getElementById('githubRepos');
                 const userEmail = document.getElementById('userEmail');
+
+                console.log(verificationStep)
 
                 switch(verificationStep){
                     case 0:
@@ -186,8 +194,8 @@
                         step1.style.display = 'none';
                         step2.style.display = 'none';
                         step3.style.display = 'block';
-                        userEmail.innerText = email;
-                        githubRepos.display = "block"
+                        userEmail.innerText = userData.email;
+                        githubRepos.style.display = "block"
                         break;
                     default:
                         break;
