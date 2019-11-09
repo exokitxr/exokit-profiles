@@ -36,6 +36,10 @@
     
                 </div>
             </div>
+
+            <div id="editRepoContainer">
+                
+            </div>
            
         </div>
 
@@ -54,6 +58,7 @@
             const client_id = '234bb63558d8675770d4'
             let userData = {};
             let createRepoName = '';
+            let repos = [];
 
             window.addEventListener('load', async (event) => {
                 userData.email = localStorage.getItem('email');
@@ -81,6 +86,25 @@
                 }
             });
 
+            const editRepo = repoIndex => {
+                const repo = repos[repoIndex]
+                const reposContainer = document.getElementById('editRepoContainer');
+                const repoContainer = document.getElementById('repoContainer');
+                editRepoContainer.style.display = 'block'
+                repoContainer.style.display = 'none'
+
+                const editHTML = `
+                    <img class="repoIcon" src="${repo.previewUrl}" />
+                    <h4 class="repoName">${repo.name}</h4>
+                    <div class="repoButtons">
+                        <button onclick="uploadFile()" style="float: right" class="repoButton">Upload</button>
+                    </div>
+                `;
+
+                editRepoContainer.insertAdjacentHTML('beforeend', editHTML)
+
+            }
+
             const loadRepos = () => {
                 fetch(`https://repos.exokit.org/repos/${userData.name}?email=${encodeURIComponent(userData.email)}&token=${encodeURIComponent(userData.token)}`, {
                     mode: 'cors',
@@ -90,7 +114,9 @@
                 .then(j => {
                     if(j.length > 0){
                         const repoContainer = document.getElementById('repoContainer')
-                        j.forEach(repo => {
+                        repos = j;
+                        let repoIndex = 0;
+                        repos.forEach(repo => {
                             if(repo.webxrUrl){
                                 const repoCard = `
                                     <div>
@@ -101,12 +127,14 @@
                                                 <a href="${repo.cloneUrl}" target="_blank"><button class="repoButton cloneRepo">Clone Repo</button></a>
                                                 <a href="${repo.repoUrl}" target="_blank"><button class="repoButton visitRepo">Visit Repo</button></a>
                                                 <a href="${repo.webxrUrl}" target="_blank"><button class="repoButton webxrRepo">Launch World</button></a>
+                                                <button onclick="editRepo(${repoIndex})" style="float: right" class="repoButton">Edit</button>
                                             </div>
                                         </div>
                                     </div>
                                 `;
                                 repoContainer.insertAdjacentHTML('beforeend', repoCard)
                             }
+                            repoIndex++;
                         })
                     }
                 });
@@ -164,8 +192,6 @@
                 const step3 = document.getElementById('loginStep3');
                 const githubRepos = document.getElementById('githubRepos');
                 const userEmail = document.getElementById('userEmail');
-
-                console.log(verificationStep)
 
                 switch(verificationStep){
                     case 0:

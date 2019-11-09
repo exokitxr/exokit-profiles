@@ -161,3 +161,12 @@ body{
 #githubRepos{
     display: none;
 }
+
+#editRepoContainer{
+    width: 80%;
+    max-width: 750px;
+    min-height: 300px;
+    margin: 0 auto;
+    box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.08);
+    display: none;
+}
