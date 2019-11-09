@@ -64,3 +64,13 @@ body{
     align-items: center;
     cursor: pointer;
 }
+#repoList li{
+    margin: 10px
+}
+
+#repoList li img{
+    height: 30px;
+    position: relative;
+    top: 10px;
+    margin-left: 15px;
+}
