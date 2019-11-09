@@ -50,7 +50,10 @@
                         changeStep()
 
                         if (response.githubOauthState) {
-                            fetch(`https://repos.exokit.org/repos/${response.name}?email=${encodeURIComponent(response.email)}&token=${encodeURIComponent(response.token)}`)
+                            fetch(`https://repos.exokit.org/repos/${response.name}?email=${encodeURIComponent(response.email)}&token=${encodeURIComponent(response.token)}`, {
+                                mode: 'cors',
+                                method: 'GET'
+                            })
                               .then(res => res.json())
                               .then(j => {
                                 console.log('got repos list', j);
