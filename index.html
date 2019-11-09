@@ -63,7 +63,8 @@
             window.addEventListener('load', async (event) => {
                 userData.email = localStorage.getItem('email');
                 userData.token = localStorage.getItem('token')
-                if(userData.email && userData.token){
+                const userHash = window.location.hash.slice(1);
+                if(userData.email && userData.token && !userHash){
                     fetch(`https://login.exokit.org/?email=${encodeURIComponent(userData.email)}&token=${userData.token}`, {
                         method: 'POST',
                         mode: 'cors'
@@ -83,6 +84,9 @@
                         verificationStep = 0;
                         changeStep()
                     })
+                }
+                else if(userHash){
+                    loadRepos(userHash)
                 }
             });
 
@@ -105,8 +109,15 @@
 
             }
 
-            const loadRepos = () => {
-                fetch(`https://repos.exokit.org/repos/${userData.name}?email=${encodeURIComponent(userData.email)}&token=${encodeURIComponent(userData.token)}`, {
+            const loadRepos = (userHash) => {
+                let query = ``;
+                if(userHash){
+                    query =`https://repos.exokit.org/repos/${userHash}`
+                }
+                else{
+                    query = `https://repos.exokit.org/repos/${userData.name}?email=${encodeURIComponent(userData.email)}&token=${encodeURIComponent(userData.token)}`
+                }
+                fetch(query, {
                     mode: 'cors',
                     method: 'GET'
                 })
