@@ -26,11 +26,9 @@
                 </div>
             </form>
         </nav>     
+        <h3 style="padding: 20px">WebXR Github Repos</h3>
         <div id="repoContainer">
-            <h3 style="padding: 20px">WebXR Github Repos</h3>
-            <ul id="repoList">
 
-            </ul>
         </div>
 
         <script>
@@ -64,19 +62,23 @@
                               .then(j => {
                                 console.log('got repos list', j);
                                 if(j.length > 0){
-                                    const repoList = document.getElementById('repoList')
+                                    const repoContainer = document.getElementById('repoContainer')
                                     j.forEach(repo => {
                                         if(repo.webxrUrl){
-                                            let line = document.createElement("LI"); 
-                                            let link = document.createElement("A");
-                                            let linkText = document.createTextNode(repo.name);  
-                                            let icon = document.createElement("IMG");
-                                            link.appendChild(linkText);
-                                            line.appendChild(link);
-                                            line.appendChild(icon)
-                                            icon.src = repo.previewUrl
-                                            link.href = repo.webxrUrl;
-                                            repoList.appendChild(line);
+                                            const repoCard = `
+                                                <div>
+                                                    <div class="repoCard">
+                                                        <img class="repoIcon" src="${repo.previewUrl}" />
+                                                        <h4 class="repoName">${repo.name}</h4>
+                                                        <div class="repoButtons">
+                                                            <a href="${repo.cloneUrl}" target="_blank"><button class="repoButton cloneRepo">Clone Repo</button></a>
+                                                            <a href="${repo.repoUrl}" target="_blank"><button class="repoButton visitRepo">Visit Repo</button></a>
+                                                            <a href="${repo.webxrUrl}" target="_blank"><button class="repoButton webxrRepo">Launch World</button></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                            repoContainer.insertAdjacentHTML('beforeend', repoCard)
                                         }
                                     })
                                 }
