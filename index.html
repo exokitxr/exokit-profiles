@@ -3,32 +3,44 @@
         <title>Exokit - Users</title>
         <link rel="stylesheet" type="text/css" href="index.css">
         <link rel="icon" href="icon.png" type="image/png">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-        <nav id="nav">
-            <img id="navIcon" src="icon.png">
-            <div id="navBrand">Users</div>
-            <div style="flex-grow: 100"></div>
-            <form id="loginForm">
-                <div id="loginStep0">
-                    <input id="loginEmail" class="loginInput" type="email" placeholder="your@email.com" value="">
-                    <button id="loginSubmit">Log In</button>
-                </div>
-                <div id="loginStep1">
-                    <input id="loginVerifcation" class="loginInput" type="text" placeholder="Verification Code" value="">
-                    <button id="loginSubmit">Verify</button>
-                </div>
-                <div id="loginStep2">
-                    <button id="loginSubmit">Login with Github</button>
-                </div>
-                <div id="loginStep3">
-                    <div id="userEmail" onclick="logout()"></div>
-                </div>
-            </form>
-        </nav>     
-        <h3 style="padding: 20px">WebXR Github Repos</h3>
-        <div id="repoContainer">
+        <div id="opacityContainer">
+            <nav id="nav">
+                <img id="navIcon" src="icon.png">
+                <div id="navBrand">Users</div>
+                <div style="flex-grow: 100"></div>
+                <form id="loginForm">
+                    <div id="loginStep0">
+                        <input id="loginEmail" class="loginInput" type="email" placeholder="your@email.com" value="">
+                        <button id="loginSubmit">Log In</button>
+                    </div>
+                    <div id="loginStep1">
+                        <input id="loginVerifcation" class="loginInput" type="text" placeholder="Verification Code" value="">
+                        <button id="loginSubmit">Verify</button>
+                    </div>
+                    <div id="loginStep2">
+                        <button id="loginSubmit">Login with Github</button>
+                    </div>
+                    <div id="loginStep3">
+                        <div id="userEmail" onclick="logout()"></div>
+                    </div>
+                </form>
+            </nav>     
+            <h3 style="padding: 20px">Exokit Worlds from Github</h3>
+            <button class="repoButton" id="createRepo" onclick="toggleCreateModal(true)">Create Exokit World</button>
+            <div id="repoContainer">
 
+            </div>
+        </div>
+
+        <div id="createRepoModal">
+            <input id="repoNameInput" type="text" placeholder="Repo name" value="">
+            <div id="createRepoButtons">
+                <button id="closeModal" class="repoButton" onclick="toggleCreateModal(false)">Cancel</button>
+                <button id="createRepoSubmit" class="repoButton createRepoSubmit_disabled">Create World</button>
+            </div>
         </div>
 
         <script>
@@ -38,6 +50,7 @@
             const client_id = '234bb63558d8675770d4'
             let userToken = null;
             let userData = null;
+            let createRepoName = null;
 
             window.addEventListener('load', async (event) => {
                 email = localStorage.getItem('email');
@@ -50,6 +63,7 @@
                     })
                     if(response.ok){
                         response = await response.json();
+                        userData = response;
                         response.githubOauthState ? verificationStep = 3 : verificationStep = 2;
                         changeStep()
 
@@ -125,6 +139,7 @@
                     }
                     else{
                         userToken = response.token;
+                        userData = response;
                         localStorage.setItem('token', userToken)
                         localStorage.setItem('email', email)
                         verificationStep++;
@@ -171,6 +186,33 @@
                 }
             }
 
+            const toggleCreateModal = (isOpen) => {
+                const modal = document.getElementById('createRepoModal');
+                const opacityContainer = document.getElementById('opacityContainer')
+                if(isOpen){
+                    modal.style.display = "block";
+                    opacityContainer.style.opacity = "0.2"
+                }
+                else{
+                    modal.style.display = "none";
+                    opacityContainer.style.opacity = "1.0"
+                }
+            }
+
+            const createRepo = async () => {
+                const query = `https://repos.exokit.org/repos/${userData.name}/${createRepoName}?email=${userData.email}&token=${userData.token}`
+                let response = await fetch(query, {
+                    method: 'PUT',
+                    mode: 'cors'
+                })
+                if(response.ok){
+                    toggleCreateModal(false);
+                }
+                else{
+
+                }
+            }
+
             const logout = () => {
                 localStorage.clear('email')
                 localStorage.clear('token')
@@ -188,6 +230,25 @@
 
             document.getElementById('loginVerifcation').addEventListener('input', e => {
                 verficationCode = e.target.value;
+            });
+
+            document.getElementById('repoNameInput').addEventListener('input', e => {
+                const submitButton = document.getElementById('createRepoSubmit');
+                if(e.target.value.length < 1){
+                    submitButton.classList.add('createRepoSubmit_disabled')
+                }
+                else{
+                    submitButton.classList.remove('createRepoSubmit_disabled')
+                }
+                createRepoName = e.target.value;
+            });
+
+            document.getElementById('createRepoSubmit').addEventListener('click', e => {
+                e.preventDefault();
+                const submitButton = document.getElementById('createRepoSubmit');
+                if(!submitButton.classList.contains('createRepoSubmit_disabled')){
+                    createRepo()
+                }
             });
 
             changeStep()
