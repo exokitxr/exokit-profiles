@@ -4,12 +4,13 @@
         <link rel="stylesheet" type="text/css" href="index.css">
         <link rel="icon" href="icon.png" type="image/png">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css?family=Cantarell|Oxygen|Roboto|Ubuntu&display=swap" rel="stylesheet">
     </head>
     <body>
         <div id="opacityContainer">
             <nav id="nav">
                 <img id="navIcon" src="icon.png">
-                <div id="navBrand">Users</div>
+                <div id="navBrand">USERS</div>
                 <div style="flex-grow: 100"></div>
                 <form id="loginForm">
                     <div id="loginStep0">
@@ -28,11 +29,14 @@
                     </div>
                 </form>
             </nav>     
-            <h3 style="padding: 20px">Exokit Worlds from Github</h3>
-            <button class="repoButton" id="createRepo" onclick="toggleCreateModal(true)">Create Exokit World</button>
-            <div id="repoContainer">
-
+            <div id="githubRepos" style="display: none">
+                <h3 style="padding: 20px">Exokit Worlds from Github</h3>
+                <button class="repoButton" id="createRepo" onclick="toggleCreateModal(true)">Create Exokit World</button>
+                <div id="repoContainer">
+    
+                </div>
             </div>
+           
         </div>
 
         <div id="createRepoModal">
@@ -44,87 +48,87 @@
         </div>
 
         <script>
-            let email = null;
-            let verficationCode = null;
+            let email = '';
+            let verficationCode = '';
             let verificationStep = 0;
             const client_id = '234bb63558d8675770d4'
-            let userToken = null;
-            let userData = null;
-            let createRepoName = null;
+            let userData = {};
+            let createRepoName = '';
 
             window.addEventListener('load', async (event) => {
-                email = localStorage.getItem('email');
-                userToken = localStorage.getItem('token')
+                userData.email = localStorage.getItem('email');
+                userData.token = localStorage.getItem('token')
                 if(email && userToken){
-                    const query = `https://login.exokit.org/?email=${encodeURIComponent(email)}&token=${userToken}`;
-                    let response = await fetch(query, {
+                    fetch(`https://login.exokit.org/?email=${encodeURIComponent(email)}&token=${userToken}`, {
                         method: 'POST',
                         mode: 'cors'
                     })
-                    if(response.ok){
-                        response = await response.json();
-                        userData = response;
-                        response.githubOauthState ? verificationStep = 3 : verificationStep = 2;
+                    .then(response => response.json())
+                    .then(json => {
+                        userData = json;
+                        userData.githubOauthState ? verificationStep = 3 : verificationStep = 2;
                         changeStep()
-
-                        if (response.githubOauthState) {
-                            fetch(`https://repos.exokit.org/repos/${response.name}?email=${encodeURIComponent(response.email)}&token=${encodeURIComponent(response.token)}`, {
-                                mode: 'cors',
-                                method: 'GET'
-                            })
-                              .then(res => res.json())
-                              .then(j => {
-                                console.log('got repos list', j);
-                                if(j.length > 0){
-                                    const repoContainer = document.getElementById('repoContainer')
-                                    j.forEach(repo => {
-                                        if(repo.webxrUrl){
-                                            const repoCard = `
-                                                <div>
-                                                    <div class="repoCard">
-                                                        <img class="repoIcon" src="${repo.previewUrl}" />
-                                                        <h4 class="repoName">${repo.name}</h4>
-                                                        <div class="repoButtons">
-                                                            <a href="${repo.cloneUrl}" target="_blank"><button class="repoButton cloneRepo">Clone Repo</button></a>
-                                                            <a href="${repo.repoUrl}" target="_blank"><button class="repoButton visitRepo">Visit Repo</button></a>
-                                                            <a href="${repo.webxrUrl}" target="_blank"><button class="repoButton webxrRepo">Launch World</button></a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            `;
-                                            repoContainer.insertAdjacentHTML('beforeend', repoCard)
-                                        }
-                                    })
-                                }
-                              });
+                        if (userData.githubOauthState) {
+                            loadRepos()
                         }
-                    }
-                    else{
+                    }).catch(e => {
+                        console.log(e)
                         localStorage.clear('email')
                         localStorage.clear('token')
                         verificationStep = 0;
                         changeStep()
-                    }
+                    })
                 }
             });
+
+            const loadRepos = () => {
+                fetch(`https://repos.exokit.org/repos/${userData.name}?email=${encodeURIComponent(userData.email)}&token=${encodeURIComponent(userData.token)}`, {
+                    mode: 'cors',
+                    method: 'GET'
+                })
+                .then(res => res.json())
+                .then(j => {
+                    if(j.length > 0){
+                        const repoContainer = document.getElementById('repoContainer')
+                        j.forEach(repo => {
+                            if(repo.webxrUrl){
+                                const repoCard = `
+                                    <div>
+                                        <div class="repoCard">
+                                            <img class="repoIcon" src="${repo.previewUrl}" />
+                                            <h4 class="repoName">${repo.name}</h4>
+                                            <div class="repoButtons">
+                                                <a href="${repo.cloneUrl}" target="_blank"><button class="repoButton cloneRepo">Clone Repo</button></a>
+                                                <a href="${repo.repoUrl}" target="_blank"><button class="repoButton visitRepo">Visit Repo</button></a>
+                                                <a href="${repo.webxrUrl}" target="_blank"><button class="repoButton webxrRepo">Launch World</button></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                repoContainer.insertAdjacentHTML('beforeend', repoCard)
+                            }
+                        })
+                    }
+                });
+            }
 
             const submitForm = async () =>{
                 let query = '';
                 switch(verificationStep){
                     case 0:
-                        userToken = localStorage.getItem('token');
+                        userData.token = localStorage.getItem('token');
                         if(userToken){
-                            query = `https://login.exokit.org/?email=${encodeURIComponent(email)}&token=${userToken}`;
+                            query = `https://login.exokit.org/?email=${encodeURIComponent(userData.email)}&token=${userData.token}`;
                         }
                         else{
-                            query = 'https://login.exokit.org/?email=' + encodeURIComponent(email);
+                            query = 'https://login.exokit.org/?email=' + encodeURIComponent(userData.email);
                         }
                         break;
                     case 1:
-                        query = 'https://login.exokit.org/?email=' + encodeURIComponent(email) + "&code=" + encodeURIComponent(verficationCode);
+                        query = 'https://login.exokit.org/?email=' + encodeURIComponent(userData.email) + "&code=" + encodeURIComponent(verficationCode);
                         break;
                     case 2:
-                        window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&scope=${encodeURIComponent(['repo','delete_repo'].join(','))}&state=${encodeURIComponent(email)}:${encodeURIComponent(userToken)}:${encodeURIComponent(location.href)}`
+                        window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&scope=${encodeURIComponent(['repo','delete_repo'].join(','))}&state=${encodeURIComponent(userData.email)}:${encodeURIComponent(userData.token)}:${encodeURIComponent(location.href)}`
                     default:
                         break;
                 }
@@ -135,13 +139,12 @@
                 if(response.ok){
                     response = await response.json();
                     if(verificationStep === 0){
-                        userToken ? verificationStep = verificationStep + 2 : verificationStep++;
+                        userData.token ? verificationStep = verificationStep + 2 : verificationStep++;
                     }
                     else{
-                        userToken = response.token;
                         userData = response;
-                        localStorage.setItem('token', userToken)
-                        localStorage.setItem('email', email)
+                        localStorage.setItem('token', userData.token)
+                        localStorage.setItem('email', userData.email)
                         verificationStep++;
                     }
                     changeStep()
@@ -153,6 +156,7 @@
                 const step1 = document.getElementById('loginStep1');
                 const step2 = document.getElementById('loginStep2');
                 const step3 = document.getElementById('loginStep3');
+                const githubRepos = document.getElementById('githubRepos');
                 const userEmail = document.getElementById('userEmail');
 
                 switch(verificationStep){
@@ -161,18 +165,21 @@
                         step1.style.display = 'none';
                         step2.style.display = 'none';
                         step3.style.display = 'none';
+                        githubRepos.display = "none"
                         break;
                     case 1:
                         step0.style.display = 'none';
                         step1.style.display = 'block';
                         step2.style.display = 'none';
                         step3.style.display = 'none';
+                        githubRepos.display = "none"
                         break;
                     case 2:
                         step0.style.display = 'none';
                         step1.style.display = 'none';
                         step2.style.display = 'block';
                         step3.style.display = 'none';
+                        githubRepos.display = "none"
                         break;
                     case 3:
                         step0.style.display = 'none';
@@ -180,6 +187,7 @@
                         step2.style.display = 'none';
                         step3.style.display = 'block';
                         userEmail.innerText = email;
+                        githubRepos.display = "block"
                         break;
                     default:
                         break;
@@ -225,7 +233,7 @@
             });
 
             document.getElementById('loginEmail').addEventListener('input', e => {
-                email = e.target.value;
+                userData.email = e.target.value;
             });
 
             document.getElementById('loginVerifcation').addEventListener('input', e => {

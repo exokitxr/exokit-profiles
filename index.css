@@ -1,5 +1,9 @@
 body{
     margin: 0;
+    /* font-family: 'Roboto', sans-serif; */
+    font-family: 'Oxygen', sans-serif;
+    /* font-family: 'Ubuntu', sans-serif; */
+    /* font-family: 'Cantarell', sans-serif; */
 }
 #nav{
     height: 50px;
@@ -15,7 +19,7 @@ body{
 #navBrand{
     padding: 8px;
     color: white;
-    border-radius: 10px;
+    border-radius: 6px;
     background-color: #5c6bc0;
     height: 18px;
     align-self: center;
