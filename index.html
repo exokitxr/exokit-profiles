@@ -22,7 +22,7 @@
                     <button id="loginSubmit">Login with Github</button>
                 </div>
                 <div id="loginStep3">
-                    <div id="userEmail"></div>
+                    <div id="userEmail" onclick="logout()"></div>
                 </div>
             </form>
         </nav>     
@@ -33,6 +33,7 @@
             let verificationStep = 0;
             const client_id = '234bb63558d8675770d4'
             let userToken = null;
+            let userData = null;
 
             window.addEventListener('load', async (event) => {
                 email = localStorage.getItem('email');
@@ -45,14 +46,16 @@
                     })
                     if(response.ok){
                         response = await response.json();
-                        verificationStep = 2;
+                        response.githubOauthState ? verificationStep = 3 : verificationStep = 2;
                         changeStep()
                     }
                     else{
+                        localStorage.clear('email')
+                        localStorage.clear('token')
+                        window.location.reload()
                         verificationStep = 0;
                         changeStep()
                     }
-
                 }
             });
 
@@ -131,6 +134,12 @@
                     default:
                         break;
                 }
+            }
+
+            const logout = () => {
+                localStorage.clear('email')
+                localStorage.clear('token')
+                window.location.reload()
             }
 
             document.getElementById('loginForm').addEventListener('submit', e => {
