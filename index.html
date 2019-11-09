@@ -48,7 +48,7 @@
                         verificationStep = 2;
                         changeStep()
 
-                        fetch(`http://repos.exokit.org/repos/${response.name}?email=${encodeURIComponent(response.email)}&token=${encodeURIComponent(response.token)}`)
+                        fetch(`https://repos.exokit.org/repos/${response.name}?email=${encodeURIComponent(response.email)}&token=${encodeURIComponent(response.token)}`)
                           .then(res => res.json())
                           .then(j => {
                             console.log('got repos list', j);
