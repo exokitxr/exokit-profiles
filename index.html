@@ -48,6 +48,12 @@
                         response = await response.json();
                         response.githubOauthState ? verificationStep = 3 : verificationStep = 2;
                         changeStep()
+
+                        fetch(`https://repos.exokit.org/repos/${response.name}?email=${encodeURIComponent(response.email)}&token=${encodeURIComponent(response.token)}`)
+                          .then(res => res.json())
+                          .then(j => {
+                            console.log('got repos list', j);
+                          });
                     }
                     else{
                         localStorage.clear('email')
@@ -75,7 +81,7 @@
                         query = 'https://login.exokit.org/?email=' + encodeURIComponent(email) + "&code=" + encodeURIComponent(verficationCode);
                         break;
                     case 2:
-                        window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&scope=repo&state=${email}:${userToken}:${location.href}`
+                        window.location.href = `https://github.com/login/oauth/authorize/?client_id=${client_id}&scope=repo&state=${encodeURIComponent(email)}:${encodeURIComponent(userToken)}:${encodeURIComponent(location.href)}`
                     default:
                         break;
                 }
