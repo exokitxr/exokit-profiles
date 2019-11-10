@@ -103,7 +103,7 @@
                     else{ 
                         document.getElementById('createRepo').style.display = 'none'
                     }
-                    document.getElementById('repoHeader').innerText = `Exokit Worlds from ${userHash}`
+                    document.getElementById('repoHeader').innerText = `Exokit Worlds from ${decodeURIComponent(userHash)}`
                     loadRepos(userHash)
                     changeStep();
                 }
